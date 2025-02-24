@@ -9,8 +9,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/mmcdole/gofeed"
 	"golang.org/x/text/unicode/norm"
+
+	"github.com/mmcdole/gofeed"
 
 	"github.com/u2d-man/polyfeed/internal/fetcher"
 )

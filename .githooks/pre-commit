@@ -1,17 +1,45 @@
 #!/bin/sh
+
 echo "analyze..."
-files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
 
-if [ -z "$files" ]; then
-  echo "No Go files to check. Formatting check passed successfully."
-  exit 0
+hash gofmt 2>&- || { echo >&2 "gofmt not in PATH."; exit 1; }
+IFS='
+'
+# shellcheck disable=SC2006
+for file in `git diff --cached --name-only --diff-filter=ACM | grep '\.go$'`
+do
+  output=`git cat-file -p :"$file" | gofmt -l 2>&1`
+  # shellcheck disable=SC2181
+  if [ $? -ne 0 ]
+  then
+    output=`echo "$output" | sed "s,<standard input>,$file,"`
+    syntaxerrors="${list}${output}\n"
+  elif [ -n "$output" ]
+  then
+    list="${list}${file}\n"
+  fi
+done
+
+exitcode=0
+
+if [ -n "$syntaxerrors" ]
+  then
+    echo >&2 "gofmt found syntax errors:"
+    # shellcheck disable=SC2059
+    printf "$syntaxerrors"
+    exitcode=1
 fi
 
-unformatted=$(gofmt -l "$files")
-
-if [ -n "$unformatted" ]; then
-  echo "unformatted"
-  echo "$unformatted"
-  echo "please execute gofmt -w <filename>"
-  exit 1
+if [ -n "$list" ]
+  then
+    echo >&2 "gofmt needs to format these files (run gofmt -w and git add):"
+    # shellcheck disable=SC2059
+    printf "$list"
+    exitcode=1
 fi
+
+if [ $exitcode -ne 1 ]; then
+    echo "All Go files are properly formatted. Formatting check passed successfully."
+fi
+
+exit $exitcode
