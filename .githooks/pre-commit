@@ -2,6 +2,7 @@
 files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
 
 if [ -z "$files" ]; then
+  echo "No Go files to check. Formatting check passed successfully."
   exit 0
 fi
 
