@@ -1,0 +1,15 @@
+#!/bin/sh
+files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
+
+if [ -z "$files" ]; then
+  exit 0
+fi
+
+unformatted=$(gofmt -l "$files")
+
+if [ -n "$unformatted" ]; then
+  echo "unformatted"
+  echo "$unformatted"
+  echo "please execute gofmt -w <filename>"
+  exit 1
+fi

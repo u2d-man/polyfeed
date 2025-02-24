@@ -12,7 +12,7 @@ import (
 	"github.com/mmcdole/gofeed"
 	"golang.org/x/text/unicode/norm"
 
-	fetcher "github.com/u2d-man/polyfeed/internal/fetcher"
+	"github.com/u2d-man/polyfeed/internal/fetcher"
 )
 
 type Article struct {
