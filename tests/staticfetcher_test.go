@@ -6,7 +6,7 @@ import (
 )
 
 func TestStaticFetcher(t *testing.T) {
-	f := fetcher.StaticRSSFetcher{URLs: []string{"https://example.com/rss/sample.xml"}}
+	f := fetcher.StaticRSSFetcher{URLs: []string{"https://example.com/rss/sample.xm"}}
 
 	urls, err := f.GetRssURLs()
 	if err != nil {
