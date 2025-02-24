@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/mmcdole/gofeed"
-	"golang.org/x/text/unicode/norm"
 	"io"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/mmcdole/gofeed"
+	"golang.org/x/text/unicode/norm"
+
+	fetcher "github.com/u2d-man/polyfeed/internal/fetcher"
 )
 
 type Article struct {
@@ -19,8 +22,9 @@ type Article struct {
 }
 
 func main() {
-	rssURL := ""
-	articles, err := fetchRSS(rssURL)
+	rssFetcher := fetcher.StaticRSSFetcher{URLs: []string{}}
+	url, err := rssFetcher.GetRssURLs()
+	articles, err := fetchRSS(url)
 	if err != nil {
 		log.Fatal("Error fetching RSS:", err)
 	}
@@ -36,26 +40,29 @@ func main() {
 	}
 }
 
-func fetchRSS(url string) ([]Article, error) {
-	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(url)
-	if err != nil {
-		return nil, err
-	}
-
+func fetchRSS(url []string) ([]Article, error) {
 	var articles []Article
-	for _, item := range feed.Items {
-		text := norm.NFC.String(item.Description)
-		analyzed, err := requestOpenAI(text)
+
+	for _, url := range url {
+		fp := gofeed.NewParser()
+		feed, err := fp.ParseURL(url)
 		if err != nil {
 			return nil, err
 		}
-		articles = append(articles, Article{
-			Title:    item.Title,
-			Link:     item.Link,
-			Analyzed: analyzed,
-		})
+		for _, item := range feed.Items {
+			text := norm.NFC.String(item.Description)
+			analyzed, err := requestOpenAI(text)
+			if err != nil {
+				return nil, err
+			}
+			articles = append(articles, Article{
+				Title:    item.Title,
+				Link:     item.Link,
+				Analyzed: analyzed,
+			})
+		}
 	}
+
 	return articles, nil
 }
 
