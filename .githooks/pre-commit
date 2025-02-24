@@ -1,4 +1,5 @@
 #!/bin/sh
+echo "analyze..."
 files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
 
 if [ -z "$files" ]; then
