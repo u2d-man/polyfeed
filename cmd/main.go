@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"golang.org/x/text/unicode/norm"
 
@@ -17,14 +18,18 @@ import (
 )
 
 type Article struct {
-	Title    string `json:"title"`
-	Link     string `json:"link"`
-	Analyzed string `json:"analyzed"`
+	Title     string `json:"title"`
+	Link      string `json:"link"`
+	Analyzed  string `json:"analyzed"`
+	Published string `json:"published"`
 }
 
 func main() {
 	rssFetcher := fetcher.StaticRSSFetcher{URLs: []string{}}
 	url, err := rssFetcher.GetRssURLs()
+	if err != nil {
+		log.Fatal("Error get rss url:", err)
+	}
 	articles, err := fetchRSS(url)
 	if err != nil {
 		log.Fatal("Error fetching RSS:", err)
@@ -51,20 +56,41 @@ func fetchRSS(url []string) ([]Article, error) {
 			return nil, err
 		}
 		for _, item := range feed.Items {
-			text := norm.NFC.String(item.Description)
-			analyzed, err := requestOpenAI(text)
+			formattedPublished, err := formatDateTime(item.Published)
 			if err != nil {
 				return nil, err
 			}
-			articles = append(articles, Article{
-				Title:    item.Title,
-				Link:     item.Link,
-				Analyzed: analyzed,
-			})
+
+			now := time.Now().Add(-24 * time.Hour)
+			nowFormatted := now.Format("2006-01-02 15:04:05")
+
+			if formattedPublished > nowFormatted {
+				text := norm.NFC.String(item.Description)
+				analyzed, err := requestOpenAI(text)
+				if err != nil {
+					return nil, err
+				}
+
+				articles = append(articles, Article{
+					Title:     item.Title,
+					Link:      item.Link,
+					Analyzed:  analyzed,
+					Published: formattedPublished,
+				})
+			}
 		}
 	}
 
 	return articles, nil
+}
+
+func formatDateTime(fetchedPublished string) (string, error) {
+	t, err := time.Parse(time.RFC1123, fetchedPublished)
+	if err != nil {
+		return "", err
+	}
+
+	return t.Format("2006-01-02 15:04:05"), nil
 }
 
 func saveArticles(articles []Article, filename string) error {
