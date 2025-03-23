@@ -8,7 +8,8 @@ import (
 	"net/http"
 )
 
-func SummarizeContent(text string) (string, error) {
+// Defined in an anonymous function to be replaced at test time.
+var SummarizeContent = func(text string) (string, error) {
 	if text == "" {
 		fmt.Println("No text to summarize")
 		return "", nil

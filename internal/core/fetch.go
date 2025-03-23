@@ -8,9 +8,12 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-func FetchArticles(urls []string) ([]Article, error) {
+type FeedParser interface {
+	ParseURL(feedURL string) (*gofeed.Feed, error)
+}
+
+func FetchArticles(parser FeedParser, urls []string) ([]Article, error) {
 	var allArticles []Article
-	parser := gofeed.NewParser()
 	cutoff := time.Now().Add(-TimeWindow * time.Hour).Format(TimeLayout)
 
 	for _, url := range urls {

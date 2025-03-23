@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/mmcdole/gofeed"
 	"github.com/u2d-man/polyfeed/internal/core"
 	"github.com/u2d-man/polyfeed/internal/fetcher"
 )
@@ -16,7 +17,8 @@ func main() {
 		log.Fatalf("Failed to get RSS URLs: %v", err)
 	}
 
-	articles, err := core.FetchArticles(urls)
+	parser := gofeed.NewParser()
+	articles, err := core.FetchArticles(parser, urls)
 	if err != nil {
 		log.Fatalf("Failed to fetch articles: %v", err)
 	}
