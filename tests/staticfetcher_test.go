@@ -1,12 +1,16 @@
 package tests
 
 import (
-	"github.com/u2d-man/polyfeed/internal/fetcher"
 	"testing"
+
+	"github.com/u2d-man/polyfeed/internal/fetcher"
 )
 
 func TestStaticFetcher(t *testing.T) {
-	f := fetcher.StaticRSSFetcher{URLs: []string{"https://example.com/rss/sample.xml"}}
+	// Is the interface implemented? use type RSSFetcher not StaticRSSFetcher.
+	var f fetcher.RSSFetcher = fetcher.StaticRSSFetcher{
+		URLs: []string{"https://example.com/rss/sample.xml"},
+	}
 
 	urls, err := f.GetRssURLs()
 	if err != nil {
