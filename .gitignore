@@ -1,2 +1,6 @@
 # ide
 .idea
+
+# for develop json file
+fetch_rss.json
+translated_articles.json
