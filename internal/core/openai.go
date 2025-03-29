@@ -16,10 +16,13 @@ var SummarizeContent = func(text string) (string, error) {
 	}
 
 	prompt := fmt.Sprintf(`以下の文章の内容を分析し、要点を簡潔にまとめてください。
-- 主要なトピックは何か？
-- 記事の目的や意図は何か？
-- 読者にとって重要なポイントは何か？
+- 主要なトピック
+- 記事の目的や意図
+- 読者にとって重要なポイント
+- ChatGPT がこの記事を読んだ感想・注意点
 
+以下注意点に注意してください。
+- markdown 記法は使用しないでください。
 %s`, text)
 
 	payload := map[string]interface{}{
