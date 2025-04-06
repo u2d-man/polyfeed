@@ -15,11 +15,14 @@ type FeedParser interface {
 func FetchArticles(parser FeedParser, urls []string) ([]Article, error) {
 	var allArticles []Article
 	cutoff := time.Now().Add(-TimeWindow * time.Hour).Format(TimeLayout)
+	fmt.Println(cutoff)
 
 	for _, url := range urls {
+		fmt.Printf("Start fetch. %s \n", url)
+
 		feed, err := parser.ParseURL(url)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse feed from %s: %w", url, err)
+			return nil, fmt.Errorf("%s: %w", url, err)
 		}
 
 		for _, item := range feed.Items {
@@ -27,6 +30,7 @@ func FetchArticles(parser FeedParser, urls []string) ([]Article, error) {
 			if err != nil || published <= cutoff {
 				continue
 			}
+			fmt.Println(published)
 
 			analyzed, err := SummarizeContent(norm.NFC.String(item.Description))
 			if err != nil {

@@ -6,6 +6,6 @@ const (
 	Model       = "gpt-4o-mini"
 	TimeLayout  = "2006-01-02 15:04:05"
 	InputFormat = "Mon, 02 Jan 2006 15:04:05 MST"
-	TimeWindow  = 24
+	TimeWindow  = 40
 	EnvAPIKey   = "OPENAI_API_KEY"
 )

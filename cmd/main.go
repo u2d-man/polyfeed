@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/mmcdole/gofeed"
@@ -12,8 +13,13 @@ import (
 )
 
 func main() {
-	rssFetcher := fetcher.StaticRSSFetcher{URLs: []string{""}}
+	if (len(os.Args)) < 2 {
+		fmt.Println("Usage: polyfeed <rss_file.txt>")
+		os.Exit(1)
+	}
+	rssFilePath := os.Args[1]
 
+	rssFetcher := fetcher.FileRSSFetcher{Path: rssFilePath}
 	urls, err := rssFetcher.GetRssURLs()
 	if err != nil {
 		log.Fatalf("Failed to get RSS URLs: %v", err)
@@ -30,14 +36,12 @@ func main() {
 		return
 	}
 
-	s := output.SlackOutput{WebhookURL: os.Getenv("WEBHOOK_URL")}
-	if err := s.Send(articles); err != nil {
-		log.Fatalf("Failed output to slack: %v", err)
-	}
-
 	if err := core.SaveToFile(articles, core.OutputFile); err != nil {
 		log.Fatalf("Failed to save articles: %v", err)
 	}
 
-	fmt.Printf("Articles saved to %s\n", core.OutputFile)
+	s := output.SlackOutput{WebhookURL: os.Getenv("WEBHOOK_URL"), Client: http.DefaultClient}
+	if err := s.Send(articles); err != nil {
+		log.Fatalf("Failed output to slack: %v", err)
+	}
 }

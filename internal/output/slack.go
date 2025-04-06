@@ -39,5 +39,6 @@ func (s SlackOutput) Send(articles []core.Article) error {
 	}
 
 	_, err = s.Client.Post(s.WebhookURL, "application/json", bytes.NewBuffer(jsonPayload))
+
 	return err
 }
