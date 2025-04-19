@@ -78,7 +78,7 @@ var SummarizeContent = func(text string) (string, error) {
 	}
 
 	if err := json.Unmarshal(respBody, &res); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to unmarshal OpenAI response: %w", err)
 	}
 
 	if len(res.Choices) == 0 {

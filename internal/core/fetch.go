@@ -8,10 +8,32 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
+// FeedParser defines the interface for parsing RSS feeds.
+// It abstracts the details of feed parsing implementation, allowing for
+// different parser implementations or mocking for tests.
 type FeedParser interface {
+	// ParseURL fetches and parses an RSS feed from the provided URL
+	// Returns the parsed feed or an error if fetching or parsing fails
 	ParseURL(feedURL string) (*gofeed.Feed, error)
 }
 
+// FetchArticles retrieves and processes articles from the provided RSS feed URLs.
+// It performs the following operations for each URL:
+// 1. Fetches and parses the RSS feed
+// 2. Filters articles based on publication date
+// 3. Summarizes article content using OpenAI
+// 4. Validates required article fields
+//
+// Parameters:
+//   - parser: The RSS feed parser implementation
+//   - urls: A list of RSS feed URLs to fetch articles from
+//
+// Returns:
+//   - A slice of processed Article structures
+//   - An error if feed fetching, parsing, or processing fails
+//
+// Articles published before the cutoff time (current time minus TimeWindow hours)
+// are filtered out. Articles without titles, links, or descriptions are also skipped.
 func FetchArticles(parser FeedParser, urls []string) ([]Article, error) {
 	var allArticles []Article
 
@@ -64,7 +86,7 @@ func FetchArticles(parser FeedParser, urls []string) ([]Article, error) {
 
 			analyzed, err := SummarizeContent(norm.NFC.String(item.Description))
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to summarize '%s': %w", item.Title, err)
 			}
 
 			if item.Title == "" || item.Link == "" {
