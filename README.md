@@ -1,5 +1,7 @@
 # PolyFeed
 
+![Go Test](https://github.com/u2d-man/polyfeed/actions/workflows/go-test.yml/badge.svg)
+
 > ⚠️ This project is under active development. Features and usage may change frequently.
 
 **PolyFeed** is a CLI tool written in Go that fetches RSS articles, summarizes them using the OpenAI API, and outputs the results to local files or Slack.
