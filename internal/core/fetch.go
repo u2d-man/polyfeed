@@ -30,6 +30,12 @@ func FetchArticles(parser FeedParser, urls []string) ([]Article, error) {
 		}
 
 		for _, item := range feed.Items {
+			if item.Published == "" {
+				fmt.Printf("pulished is blank. %s\n", item.Title)
+
+				continue
+			}
+
 			published, err := ParseAndFormatTime(item.Published)
 			if err != nil {
 				fmt.Printf("warning: Failed to parse publication time for %s: %v\n", item.Title, err)
@@ -46,6 +52,12 @@ func FetchArticles(parser FeedParser, urls []string) ([]Article, error) {
 
 			if pubTime.Before(cutoffTime) {
 				fmt.Printf("skipping older article from %s: %s\n", published, item.Title)
+
+				continue
+			}
+
+			if item.Description == "" {
+				fmt.Printf("skipping empty description %s\n", item.Title)
 
 				continue
 			}
