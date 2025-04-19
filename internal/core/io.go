@@ -10,7 +10,10 @@ import (
 func ParseAndFormatTime(raw string) (string, error) {
 	t, err := time.Parse(InputFormat, raw)
 	if err != nil {
-		return "", err
+		t, err = time.Parse(InputFormatISO, raw)
+		if err != nil {
+			return "", nil
+		}
 	}
 	return t.Format(TimeLayout), nil
 }

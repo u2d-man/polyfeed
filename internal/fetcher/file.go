@@ -21,7 +21,10 @@ func (f FileRSSFetcher) GetRssURLs() ([]string, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		urls = append(urls, line)
+		// skip comment line.
+		if line != "" && !strings.HasPrefix(line, "#") {
+			urls = append(urls, line)
+		}
 	}
 
 	if err := scanner.Err(); err != nil {

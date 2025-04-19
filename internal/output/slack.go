@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/u2d-man/polyfeed/internal/core"
@@ -38,7 +39,17 @@ func (s SlackOutput) Send(articles []core.Article) error {
 		return err
 	}
 
-	_, err = s.Client.Post(s.WebhookURL, "application/json", bytes.NewBuffer(jsonPayload))
+	resp, err := s.Client.Post(s.WebhookURL, "application/json", bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 
-	return err
+	if resp.StatusCode >= 300 {
+		respBody, _ := io.ReadAll(resp.Body)
+
+		return fmt.Errorf("slack API returned status %d: %s", resp.StatusCode, respBody)
+	}
+
+	return nil
 }

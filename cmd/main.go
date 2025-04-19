@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/mmcdole/gofeed"
 	"github.com/u2d-man/polyfeed/internal/core"
@@ -18,6 +19,10 @@ func main() {
 		os.Exit(1)
 	}
 	rssFilePath := os.Args[1]
+
+	if _, err := os.Stat(rssFilePath); os.IsNotExist(err) {
+		log.Fatalf("file does not exists: %s", rssFilePath)
+	}
 
 	rssFetcher := fetcher.FileRSSFetcher{Path: rssFilePath}
 	urls, err := rssFetcher.GetRssURLs()
@@ -40,8 +45,12 @@ func main() {
 		log.Fatalf("Failed to save articles: %v", err)
 	}
 
-	s := output.SlackOutput{WebhookURL: os.Getenv("WEBHOOK_URL"), Client: http.DefaultClient}
-	if err := s.Send(articles); err != nil {
-		log.Fatalf("Failed output to slack: %v", err)
+	client := &http.Client{Timeout: 30 * time.Second}
+	webhookURL := os.Getenv("WEBHOOK_URL")
+	if webhookURL != "" {
+		s := output.SlackOutput{WebhookURL: webhookURL, Client: client}
+		if err := s.Send(articles); err != nil {
+			log.Fatalf("Failed output to slack: %v", err)
+		}
 	}
 }

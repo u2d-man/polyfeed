@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 // Defined in an anonymous function to be replaced at test time.
@@ -22,8 +23,11 @@ var SummarizeContent = func(text string) (string, error) {
 - ChatGPT がこの記事を読んだ感想・注意点
 
 以下注意点に注意してください。
-- markdown 記法は使用しないでください。
+- markdown 記法は使用し
+ないでください。
 %s`, text)
+
+	client := &http.Client{Timeout: 30 * time.Second}
 
 	payload := map[string]interface{}{
 		"model": Model,
@@ -49,15 +53,22 @@ var SummarizeContent = func(text string) (string, error) {
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
 
-	fmt.Println("Response Status:", resp.Status)
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
 
-	respBody, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("openAI API returned non-OK status: %d, body: %s", resp.StatusCode, respBody)
+	}
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read OpenAI response: %w", err)
+	}
 	var res struct {
 		Choices []struct {
 			Message struct {
