@@ -6,10 +6,10 @@
 
 ## 🚀 Features
 
-- Fetch articles from any RSS feed
-- Summarize content using OpenAI's GPT API
+- Fetch articles from RSS feeds using URLs listed in a text file
+- Summarize content using OpenAI's GPT-4o-mini API
 - Output results to:
-  - Local JSON or text files
+  - Local JSON files
   - Slack channels via Incoming Webhooks
 - Supports static input files for development/testing
 - Includes unit tests for core functionality
@@ -17,8 +17,10 @@
 ## 🛠 Usage
 
 ```bash
-go run ./cmd/main.go
+go run ./cmd/main.go <rss_file.txt>
 ```
+
+Where `<rss_file.txt>` is a text file containing RSS feed URLs, one per line.
 
 > ⚠️ This project is under active development. Configuration via flags or environment variables will be added in a future release.
 
@@ -34,7 +36,7 @@ tests/ - Unit tests
 
 ## 📦 Requirements
 
-Go 1.23+
+Go 1.23.5
 
 OpenAI API key
 
@@ -42,14 +44,18 @@ OpenAI API key
 
 ## 🔧 Configuration
 
-Environment variable support is planned in a future version. The following variables are expected:
+The following environment variables are currently supported:
 
-| Variable            | Description                           |
-| ------------------- | ------------------------------------- |
-| `OPENAI_API_KEY`    | Your OpenAI API key                   |
-| `SLACK_WEBHOOK_URL` | Slack Incoming Webhook URL (optional) |
-| `RSS_FEED_URLS`     | Comma-separated list of RSS feed URLs |
-| `OUTPUT_DIR`        | Output directory path (optional)      |
+| Variable          | Description                           |
+| ----------------- | ------------------------------------- |
+| `OPENAI_API_KEY`  | Your OpenAI API key (required)        |
+| `WEBHOOK_URL`     | Slack Incoming Webhook URL (optional) |
+
+Future versions plan to add support for:
+| Variable       | Description                             |
+| -------------- | --------------------------------------- |
+| `RSS_FEED_URLS`| Comma-separated list of RSS feed URLs   |
+| `OUTPUT_DIR`   | Custom output directory path            |
 
 ## 📄 Example Output
 
@@ -63,12 +69,16 @@ Summarized Article (JSON):
 }
 ```
 
-Slack Message (Markdown):
+Slack Message (Plain Text):
 
-```arduino
-📰 _New AI Tool Released_
-<https://example.com/article>
-> OpenAI has released a new tool for summarizing text using GPT-4...
+```
+1. New AI Tool Released
+https://example.com/article
+投稿日: 2023-04-19 15:04:05
+
+OpenAI has released a new tool for summarizing text using GPT-4...
+
+------------------------------
 ```
 
 ## 🧪 Running Tests
