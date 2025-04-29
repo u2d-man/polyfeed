@@ -1,94 +1,70 @@
 # PolyFeed
 
-![Go Test](https://github.com/u2d-man/polyfeed/actions/workflows/go-test.yml/badge.svg)
+[![Go Test](https://github.com/u2d-man/polyfeed/actions/workflows/go-test.yml/badge.svg)](https://github.com/u2d-man/polyfeed/actions/workflows/go-test.yml)
 
-> ⚠️ This project is under active development. Features and usage may change frequently.
+PolyFeed is a CLI tool that fetches RSS articles, summarizes them using OpenAI, and outputs the results to local files or Slack.
 
-**PolyFeed** is a CLI tool written in Go that fetches RSS articles, summarizes them using the OpenAI API, and outputs the results to local files or Slack.
+## Features
 
-## 🚀 Features
+- Fetches articles from multiple RSS feeds
+- Filters articles published within the last 24 hours
+- Summarizes article content using OpenAI GPT models
+- Outputs results to JSON file and optionally to Slack
 
-- Fetch articles from RSS feeds using URLs listed in a text file
-- Summarize content using OpenAI's GPT-4o-mini API
-- Output results to:
-  - Local JSON files
-  - Slack channels via Incoming Webhooks
-- Supports static input files for development/testing
-- Includes unit tests for core functionality
+## Usage
 
-## 🛠 Usage
+### Local Execution
 
 ```bash
-go run ./cmd/main.go <rss_file.txt>
+# Set your OpenAI API key as an environment variable
+export OPENAI_API_KEY=your_openai_api_key
+
+# Optional: Set Slack webhook URL for Slack output
+export WEBHOOK_URL=your_slack_webhook_url
+
+# Run the program with the path to your RSS feed list file
+polyfeed rss_feeds.txt
 ```
 
-Where `<rss_file.txt>` is a text file containing RSS feed URLs, one per line.
+### Automated Execution with GitHub Actions
 
-> ⚠️ This project is under active development. Configuration via flags or environment variables will be added in a future release.
+PolyFeed can be automatically executed using GitHub Actions on a schedule. To set this up:
 
-## 📁 Project Structure
+1. Fork this repository
+2. Set up the following GitHub repository secrets:
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `SLACK_WEBHOOK_URL`: (Optional) Your Slack webhook URL
+   - `RSS_FEEDS`: A list of RSS feed URLs, one per line
 
-```go
-cmd/ - Application entry point
-internal/core/ - Core logic: data models, fetchers, OpenAI integration
-internal/fetcher/ - RSS and static file fetchers
-internal/output/ - Output handlers (e.g. file writer, Slack)
-tests/ - Unit tests
-```
+The workflow will run daily at 9:00 UTC (18:00 JST) and process the RSS feeds. Results are stored as GitHub artifacts and can be sent to Slack.
 
-## 📦 Requirements
+## RSS Feed List Format
 
-Go 1.23.5
-
-OpenAI API key
-
-(Optional) Slack Incoming Webhook URL
-
-## 🔧 Configuration
-
-The following environment variables are currently supported:
-
-| Variable          | Description                           |
-| ----------------- | ------------------------------------- |
-| `OPENAI_API_KEY`  | Your OpenAI API key (required)        |
-| `WEBHOOK_URL`     | Slack Incoming Webhook URL (optional) |
-
-Future versions plan to add support for:
-| Variable       | Description                             |
-| -------------- | --------------------------------------- |
-| `RSS_FEED_URLS`| Comma-separated list of RSS feed URLs   |
-| `OUTPUT_DIR`   | Custom output directory path            |
-
-## 📄 Example Output
-
-Summarized Article (JSON):
-
-```json
-{
-  "title": "New AI Tool Released",
-  "link": "https://example.com/article",
-  "summary": "OpenAI has released a new tool for summarizing text using GPT-4..."
-}
-```
-
-Slack Message (Plain Text):
+Create a text file with one RSS feed URL per line:
 
 ```
-1. New AI Tool Released
-https://example.com/article
-投稿日: 2023-04-19 15:04:05
-
-OpenAI has released a new tool for summarizing text using GPT-4...
-
-------------------------------
+https://example.com/feed.xml
+https://another-site.com/rss
+# Lines starting with # are treated as comments
 ```
 
-## 🧪 Running Tests
+## Installation
 
+```bash
+go install github.com/u2d-man/polyfeed@latest
 ```
-go test ./...
-```
 
-## 📄 License
+## Output
 
-MIT License. See LICENSE for details.
+Processed articles are saved to `fetch_rss.json` in the current directory. If a Slack webhook URL is provided, the results will also be posted to the associated Slack channel.
+
+## Configuration
+
+- OpenAI model: `gpt-4o-mini` (default)
+- Time window: 24 hours (articles published within this window are processed)
+
+## Requirements
+
+- Go 1.23 or higher
+- An OpenAI API key
+- (Optional) A Slack webhook URL

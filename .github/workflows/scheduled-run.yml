@@ -1,0 +1,44 @@
+name: Scheduled RSS Processing
+
+on:
+  schedule:
+    # 毎日午前9時に実行 (UTC) = 日本時間18時
+    - cron: '0 9 * * *'
+  # 手動実行も可能にする
+  workflow_dispatch:
+
+jobs:
+  process-rss:
+    name: Process RSS Feeds
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.5'
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Create RSS file
+        run: |
+          # If there is no RSS list in the repository, create one from secret
+          echo "${{ secrets.RSS_FEEDS }}" > rss_feeds.txt
+
+      - name: Run PolyFeed
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: go run cmd/main.go rss_feeds.txt
+
+      - name: Upload results as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: processed-articles
+          path: fetch_rss.json
+          retention-days: 7
